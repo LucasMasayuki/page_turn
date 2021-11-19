@@ -5,12 +5,12 @@ import 'package:flutter/widgets.dart';
 import 'src/builders/index.dart';
 
 class PageTurn extends StatefulWidget {
-  const PageTurn({
-    Key key,
+  PageTurn({
+    Key? key,
     this.duration = const Duration(milliseconds: 450),
     this.cutoff = 0.6,
     this.backgroundColor = const Color(0xFFFFFFCC),
-    @required this.children,
+    this.children = const [],
     this.initialIndex = 0,
     this.lastPage,
     this.showDragCutoff = false,
@@ -20,7 +20,7 @@ class PageTurn extends StatefulWidget {
   final List<Widget> children;
   final Duration duration;
   final int initialIndex;
-  final Widget lastPage;
+  final Widget? lastPage;
   final bool showDragCutoff;
   final double cutoff;
 
@@ -33,7 +33,7 @@ class PageTurnState extends State<PageTurn> with TickerProviderStateMixin {
   List<Widget> pages = [];
 
   List<AnimationController> _controllers = [];
-  bool _isForward;
+  bool? _isForward;
 
   @override
   void didUpdateWidget(PageTurn oldWidget) {
@@ -84,7 +84,7 @@ class PageTurnState extends State<PageTurn> with TickerProviderStateMixin {
     pageNumber = widget.initialIndex;
   }
 
-  bool get _isLastPage => pages != null && (pages.length - 1) == pageNumber;
+  bool get _isLastPage => pages.length - 1 == pageNumber;
 
   bool get _isFirstPage => pageNumber == 0;
 
@@ -97,16 +97,17 @@ class PageTurnState extends State<PageTurn> with TickerProviderStateMixin {
         _isForward = true;
       }
     }
-    if (_isForward || pageNumber == 0) {
+
+    if (_isForward! || pageNumber == 0) {
       _controllers[pageNumber].value += _ratio;
     } else {
       _controllers[pageNumber - 1].value += _ratio;
     }
   }
 
-  Future _onDragFinish() async {
+  Future<void> _onDragFinish() async {
     if (_isForward != null) {
-      if (_isForward) {
+      if (_isForward!) {
         if (!_isLastPage &&
             _controllers[pageNumber].value <= (widget.cutoff + 0.15)) {
           await nextPage();
@@ -114,8 +115,6 @@ class PageTurnState extends State<PageTurn> with TickerProviderStateMixin {
           await _controllers[pageNumber].forward();
         }
       } else if (pageNumber > 0) {
-        print(
-            'Val:${_controllers[pageNumber - 1].value} -> ${widget.cutoff + 0.28}');
         if (!_isFirstPage &&
             _controllers[pageNumber - 1].value >= widget.cutoff) {
           await previousPage();
@@ -132,7 +131,6 @@ class PageTurnState extends State<PageTurn> with TickerProviderStateMixin {
   }
 
   Future nextPage() async {
-    print('Next Page..');
     await _controllers[pageNumber].reverse();
     if (mounted)
       setState(() {
@@ -141,7 +139,6 @@ class PageTurnState extends State<PageTurn> with TickerProviderStateMixin {
   }
 
   Future previousPage() async {
-    print('Previous Page..');
     await _controllers[pageNumber - 1].forward();
     if (mounted)
       setState(() {
@@ -149,8 +146,7 @@ class PageTurnState extends State<PageTurn> with TickerProviderStateMixin {
       });
   }
 
-  Future goToPage(int index) async {
-    print('Navigate Page ${index + 1}..');
+  Future<void> goToPage(int index) async {
     if (mounted)
       setState(() {
         pageNumber = index;
@@ -182,20 +178,16 @@ class PageTurnState extends State<PageTurn> with TickerProviderStateMixin {
           child: Stack(
             fit: StackFit.expand,
             children: <Widget>[
-              if (widget?.lastPage != null) ...[
-                widget.lastPage,
+              if (widget.lastPage != null) ...[
+                widget.lastPage!,
               ],
-              if (pages != null)
-                ...pages.map((p) {
-                  i++;
-                  final pn = pages.length - pageNumber;
-                  final ret = Offstage(
-                      offstage: !(i >= pn - 1 && i <= pn + 1), child: p);
-                  return ret;
-                }).toList()
-              else ...[
-                Container(child: CircularProgressIndicator()),
-              ],
+              ...pages.map((p) {
+                i++;
+                final pn = pages.length - pageNumber;
+                final ret =
+                    Offstage(offstage: !(i >= pn - 1 && i <= pn + 1), child: p);
+                return ret;
+              }).toList(),
               Positioned.fill(
                 child: Flex(
                   direction: Axis.horizontal,
