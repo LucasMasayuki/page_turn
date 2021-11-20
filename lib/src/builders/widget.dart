@@ -44,7 +44,10 @@ class _PageTurnWidgetState extends State<PageTurnWidget> {
       );
     }
     final image = await boundary.toImage(pixelRatio: pixelRatio);
-    setState(() => _image = image);
+
+    if (this.mounted) {
+      setState(() => _image = image);
+    }
   }
 
   @override

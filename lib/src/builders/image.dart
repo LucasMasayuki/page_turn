@@ -70,7 +70,9 @@ class _PageTurnImageState extends State<PageTurnImage> {
   }
 
   void _handleImageFrame(ImageInfo imageInfo, bool synchronousCall) {
-    setState(() => _imageInfo = imageInfo);
+    if (this.mounted) {
+      setState(() => _imageInfo = imageInfo);
+    }
   }
 
   // Updates _imageStream to newStream, and moves the stream listener
