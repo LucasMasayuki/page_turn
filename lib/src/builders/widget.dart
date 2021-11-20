@@ -33,7 +33,7 @@ class _PageTurnWidgetState extends State<PageTurnWidget> {
     }
   }
 
-  void _captureImage(Duration timeStamp, BuildContext context) async {
+  void _captureImage(Duration timeStamp) async {
     final pixelRatio = MediaQuery.of(context).devicePixelRatio;
     final boundary = _boundaryKey.currentContext!.findRenderObject()
         as RenderRepaintBoundary;
@@ -41,7 +41,6 @@ class _PageTurnWidgetState extends State<PageTurnWidget> {
       await Future.delayed(const Duration(milliseconds: 20));
       return _captureImage(
         timeStamp,
-        context,
       );
     }
     final image = await boundary.toImage(pixelRatio: pixelRatio);
@@ -61,7 +60,9 @@ class _PageTurnWidgetState extends State<PageTurnWidget> {
       );
     } else {
       WidgetsBinding.instance!.addPostFrameCallback(
-        (Duration timestamp) => _captureImage(timestamp, context),
+        (Duration timestamp) => _captureImage(
+          timestamp,
+        ),
       );
       return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
